@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#4CAF50" rx="112" ry="112"/>
+  <g transform="translate(0, 30)">
+    <!-- Center petal -->
+    <path d="M256,120 C256,120 220,180 200,260 C180,340 220,380 256,380 C292,380 332,340 312,260 C292,180 256,120 256,120 Z" fill="#ffffff" opacity="0.9"/>
+    <!-- Left petal 1 -->
+    <path d="M256,180 C200,180 150,220 120,290 C90,360 140,380 200,380 C230,380 256,350 256,350 C256,350 220,300 256,180 Z" fill="#ffffff" opacity="0.8"/>
+    <!-- Right petal 1 -->
+    <path d="M256,180 C312,180 362,220 392,290 C422,360 372,380 312,380 C282,380 256,350 256,350 C256,350 292,300 256,180 Z" fill="#ffffff" opacity="0.8"/>
+    <!-- Left petal 2 -->
+    <path d="M220,250 C160,240 110,270 80,330 C60,370 120,380 160,360 C190,340 220,310 220,250 Z" fill="#ffffff" opacity="0.6"/>
+    <!-- Right petal 2 -->
+    <path d="M292,250 C352,240 402,270 432,330 C452,370 392,380 352,360 C322,340 292,310 292,250 Z" fill="#ffffff" opacity="0.6"/>
+    <!-- Center base light -->
+    <path d="M200,380 C220,390 292,390 312,380 C280,410 232,410 200,380 Z" fill="#ffffff" opacity="0.4"/>
+  </g>
+</svg>
