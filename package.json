@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prebuild": "npx -y sharp-cli@latest -i public/logo.svg -o public/icon-512x512-v3.png && npx -y sharp-cli@latest resize 192 192 -i public/icon-512x512-v3.png -o public/icon-192x192-v3.png && npx -y sharp-cli@latest resize 180 180 -i public/icon-512x512-v3.png -o public/apple-touch-icon-v3.png",
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
