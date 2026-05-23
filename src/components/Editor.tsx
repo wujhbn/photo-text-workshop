@@ -1,5 +1,5 @@
 import { ImagePlus, Images, LayoutTemplate, Share2, Download, RefreshCcw, Type, PenLine, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { generateCopy, getCurrentTimeOfDay, TimeOfDay } from '../lib/copy';
 import { getTemplate, generateSampleBackground, TEMPLATES, TemplateId } from '../lib/templates';
 import { renderCanvas } from '../lib/canvas';
@@ -63,7 +63,7 @@ export default function Editor() {
     }
   }, [imageElement, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
