@@ -1,4 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&family=LXGW+WenKai+TC&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'ChenYuluoyan';
+  src: url('https://cdn.jsdelivr.net/npm/@fontpkg/chenyuluoyan@1.0.0/ChenYuluoyan-Thin.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 @layer utilities {
   .pb-safe {

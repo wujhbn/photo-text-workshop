@@ -1,14 +1,14 @@
-import { ImagePlus, Images, LayoutTemplate, Share2, Download, RefreshCcw, Type, PenLine, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { ImagePlus, Images, LayoutTemplate, Share2, Download, RefreshCcw, Type, PenLine, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter } from 'lucide-react';
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { generateCopy, getCurrentTimeOfDay, TimeOfDay } from '../lib/copy';
 import { getTemplate, generateSampleBackground, TEMPLATES, TemplateId } from '../lib/templates';
 import { renderCanvas } from '../lib/canvas';
 
 const FONT_OPTIONS = [
-  { label: '系統黑體', value: '"PingFang TC", "Helvetica Neue", "Microsoft JhengHei", sans-serif' },
-  { label: '經典楷體', value: '"BiauKai", "DFKai-SB", serif' },
-  { label: '圓潤圓體', value: '"YuanTi TC", "STYuan", "Microsoft JhengHei", sans-serif' },
-  { label: '古典宋體', value: '"Songti TC", "LiSong Pro", "PMingLiU", serif' }
+  { label: '系統黑體', value: '"Noto Sans TC", sans-serif' },
+  { label: '古典明體', value: '"Noto Serif TC", serif' },
+  { label: '經典楷體', value: '"LXGW WenKai TC", serif' },
+  { label: '手寫行書', value: '"ChenYuluoyan", "LXGW WenKai TC", cursive' }
 ];
 
 export default function Editor() {
@@ -24,8 +24,27 @@ export default function Editor() {
   const [strokeStrength, setStrokeStrength] = useState(50);
   const [textVerticalPos, setTextVerticalPos] = useState(25);
   const [textAlign, setTextAlign] = useState<CanvasTextAlign>('center');
+  const [isVertical, setIsVertical] = useState(false);
   const [customStrokeColor, setCustomStrokeColor] = useState<string | null>(null);
   const [showDate, setShowDate] = useState(true);
+
+  // Pre-load fonts and force canvas redraw when ready
+  useEffect(() => {
+    // Explicitly load known web fonts to ensure canvas has them ready
+    const fontsToLoad = ['"Noto Sans TC"', '"Noto Serif TC"', '"LXGW WenKai TC"', '"ChenYuluoyan"'];
+    
+    Promise.all(
+      fontsToLoad.map(f => document.fonts.load(`16px ${f}`).catch(console.error))
+    ).then(() => {
+      document.fonts.ready.then(() => {
+        // Small state toggle to force canvas re-render now that fonts are loaded
+        setFontSizeFactor(prev => prev + 0.0001);
+        setTimeout(() => setFontSizeFactor(prev => prev - 0.0001), 100);
+        setTimeout(() => setFontSizeFactor(prev => prev + 0.0001), 500);
+        setTimeout(() => setFontSizeFactor(prev => prev - 0.0001), 1000);
+      });
+    });
+  }, []);
 
   // Load sample background on mount if no image
   useEffect(() => {
@@ -58,10 +77,11 @@ export default function Editor() {
         strokeColor: customStrokeColor || getTemplate(templateId).textStroke,
         showDate,
         textVerticalPos,
-        textAlign
+        textAlign,
+        isVertical
       });
     }
-  }, [imageElement, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign]);
+  }, [imageElement, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,6 +139,13 @@ export default function Editor() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 pb-safe">
+      {/* Hidden Font Preloader to force network requests */}
+      <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}>
+        {FONT_OPTIONS.map((font, idx) => (
+          <span key={idx} style={{ fontFamily: font.value }}>字體載入載入 preload</span>
+        ))}
+      </div>
+      
       {/* Header */}
       <header className="bg-gray-50 flex-shrink-0 flex items-center justify-start px-4 pt-6 pb-2 z-10 pt-safe">
         <div className="px-6 py-2.5 bg-white text-gray-800 border border-gray-200 rounded-full font-bold tracking-wider text-2xl shadow-sm">
@@ -318,6 +345,18 @@ export default function Editor() {
               </div>
             </div>
           </div>
+          <div className="flex items-center justify-between border-t border-gray-100 pt-4 pb-4">
+            <span className="text-sm font-bold text-gray-600 flex items-center gap-2">
+              <AlignVerticalJustifyCenter size={16} /> 直式排版
+            </span>
+            <button 
+              onClick={() => setIsVertical(!isVertical)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isVertical ? 'bg-green-500' : 'bg-gray-300'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVertical ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+
           <div className="flex items-center justify-between border-t border-gray-100 pt-4">
             <span className="text-sm font-bold text-gray-600">顯示日期</span>
             <button 

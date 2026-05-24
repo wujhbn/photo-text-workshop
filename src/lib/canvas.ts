@@ -12,6 +12,7 @@ export interface CanvasRenderOptions {
   showDate: boolean;
   textVerticalPos: number;
   textAlign: CanvasTextAlign;
+  isVertical: boolean;
 }
 
 export function renderCanvas({
@@ -26,6 +27,7 @@ export function renderCanvas({
   showDate,
   textVerticalPos,
   textAlign,
+  isVertical,
 }: CanvasRenderOptions) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -72,56 +74,103 @@ export function renderCanvas({
   // Configuration for Text
   const marginX = 80;
   const safeWidth = width - marginX * 2;
+  const marginY = 80;
+  const safeHeight = height - marginY * 2;
   const baseTitleSize = template.id === 'large' ? 300 : 220;
   const baseTextSize = template.id === 'large' ? 90 : 70;
-
-  // Draw Title
-  const titleY = height * (textVerticalPos / 100);
-  drawOutlinedText(
-    ctx, 
-    texts.title, 
-    width / 2, 
-    titleY, 
-    template.titleColor, 
-    strokeColor, 
-    baseTitleSize * fontSizeFactor,
-    fontFamily,
-    'center',
-    strokeStrength,
-    template.shadowColor
-  );
-
   const actualTitleSize = baseTitleSize * fontSizeFactor;
   const actualTextSize = baseTextSize * fontSizeFactor;
 
-  let currentTop = titleY + actualTitleSize * 0.5 + 80 * fontSizeFactor;
-  const paragraphGap = 15 * fontSizeFactor;
-
-  // Alignments
-  let textX = width / 2;
-  if (textAlign === 'left') textX = marginX + 20; // adding slightly more margin
-  if (textAlign === 'right') textX = width - marginX - 20;
-
-  // Draw Message
-  if (texts.message) {
-    const rawLines = texts.message.split('\n');
-    let isFirstLine = true;
-
-    rawLines.forEach((textLine) => {
-      // For each paragraph/line, split by width
-      const subLines = wrapText(ctx, textLine, safeWidth, actualTextSize, fontFamily);
-      subLines.forEach(line => {
-        // If it's a completely empty line from user pressing enter, just add gap
-        if (line.trim() === '') {
-          currentTop += actualTextSize * 0.8;
-          return;
-        }
-        drawOutlinedText(ctx, line, textX, currentTop + actualTextSize * 0.5, template.textColor, strokeColor, actualTextSize, fontFamily, textAlign, strokeStrength, template.shadowColor);
-        currentTop += actualTextSize * 1.35;
-      });
-      // Add gap between paragraphs
-      currentTop += paragraphGap;
+  if (isVertical) {
+    let rightOffset = width * (1 - textVerticalPos / 100);
+    // restrict to canvas
+    if (rightOffset > width - marginX - actualTitleSize / 2) {
+      rightOffset = width - marginX - actualTitleSize / 2;
+    }
+    
+    let curY = marginY;
+    const titleChars = texts.title.split('');
+    let cy = curY + actualTitleSize * 0.5;
+    titleChars.forEach((ch) => {
+      drawOutlinedText(
+        ctx, ch, rightOffset, cy, template.titleColor, strokeColor, actualTitleSize, fontFamily, 'center', strokeStrength, template.shadowColor
+      );
+      cy += actualTitleSize * 1.1;
     });
+
+    rightOffset -= (actualTitleSize * 0.5 + 80 * fontSizeFactor);
+    const colGap = 15 * fontSizeFactor;
+
+    if (texts.message) {
+      const rawLines = texts.message.split('\n');
+      rawLines.forEach((textLine) => {
+        const subLines = wrapTextVertical(safeHeight, textLine, actualTextSize * 1.1);
+        subLines.forEach(line => {
+          if (line.trim() === '') {
+            rightOffset -= actualTextSize * 0.8;
+            return;
+          }
+          
+          let y = marginY + actualTextSize * 0.5;
+          // Apply horizontal alignment for vertical lines (if alignment isn't start/top)
+          const expectedLineHeight = line.length * (actualTextSize * 1.1);
+          if (textAlign === 'center') {
+             y += (safeHeight - expectedLineHeight) / 2;
+          } else if (textAlign === 'right') { // Bottom aligned
+             y += (safeHeight - expectedLineHeight);
+          }
+
+          for (let i = 0; i < line.length; i++) {
+            drawOutlinedText(ctx, line[i], rightOffset, y, template.textColor, strokeColor, actualTextSize, fontFamily, 'center', strokeStrength, template.shadowColor);
+            y += actualTextSize * 1.1;
+          }
+          rightOffset -= actualTextSize * 1.35;
+        });
+        rightOffset -= colGap;
+      });
+    }
+
+  } else {
+    // Draw Title
+    const titleY = height * (textVerticalPos / 100);
+    drawOutlinedText(
+      ctx, 
+      texts.title, 
+      width / 2, 
+      titleY, 
+      template.titleColor, 
+      strokeColor, 
+      actualTitleSize,
+      fontFamily,
+      'center',
+      strokeStrength,
+      template.shadowColor
+    );
+  
+    let currentTop = titleY + actualTitleSize * 0.5 + 80 * fontSizeFactor;
+    const paragraphGap = 15 * fontSizeFactor;
+  
+    // Alignments
+    let textX = width / 2;
+    if (textAlign === 'left') textX = marginX + 20;
+    if (textAlign === 'right') textX = width - marginX - 20;
+  
+    // Draw Message
+    if (texts.message) {
+      const rawLines = texts.message.split('\n');
+      rawLines.forEach((textLine) => {
+        const subLines = wrapText(ctx, textLine, safeWidth, actualTextSize, fontFamily);
+        subLines.forEach(line => {
+          if (line.trim() === '') {
+            currentTop += actualTextSize * 0.8;
+            return;
+          }
+          drawOutlinedText(ctx, line, textX, currentTop + actualTextSize * 0.5, template.textColor, strokeColor, actualTextSize, fontFamily, textAlign, strokeStrength, template.shadowColor);
+          currentTop += actualTextSize * 1.35;
+        });
+        currentTop += paragraphGap;
+      });
+    }
   }
 
   // Draw Date
@@ -131,6 +180,14 @@ export function renderCanvas({
     const dateY = height - 60;
     drawOutlinedText(ctx, dateStr, width - 60, dateY, 'rgba(255,255,255,0.8)', 'rgba(0,0,0,0.5)', 40, fontFamily, 'right', strokeStrength * 0.5, 'transparent');
   }
+}
+
+function getFontString(fontSize: number, fontFamily: string) {
+  // Use normal weight for handwriting and custom fonts to prevent synthetic bolding 
+  // from breaking Canvas font matching on some devices (like Android).
+  const isCustomHandwriting = fontFamily.includes('LXGW WenKai') || fontFamily.includes('ChenYuluoyan');
+  const weight = isCustomHandwriting ? 'normal' : 'bold';
+  return `${weight} ${Math.floor(fontSize)}px ${fontFamily}`;
 }
 
 function drawOutlinedText(
@@ -146,7 +203,7 @@ function drawOutlinedText(
   strokeStrength: number,
   shadowColor: string
 ) {
-  ctx.font = `bold ${fontSize}px ${fontFamily}`;
+  ctx.font = getFontString(fontSize, fontFamily);
   ctx.textAlign = align;
   ctx.textBaseline = 'middle';
   
@@ -182,7 +239,7 @@ function drawOutlinedText(
 }
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, fontSize: number, fontFamily: string): string[] {
-  ctx.font = `bold ${fontSize}px ${fontFamily}`;
+  ctx.font = getFontString(fontSize, fontFamily);
   const chars = text.split('');
   let line = '';
   const lines: string[] = [];
@@ -191,6 +248,25 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number,
     const testLine = line + chars[n];
     const metrics = ctx.measureText(testLine);
     if (metrics.width > maxWidth && n > 0) {
+      lines.push(line);
+      line = chars[n];
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line);
+  return lines;
+}
+
+function wrapTextVertical(maxHeight: number, text: string, charAdvanceY: number): string[] {
+  const chars = text.split('');
+  let line = '';
+  const lines: string[] = [];
+
+  for (let n = 0; n < chars.length; n++) {
+    const testLine = line + chars[n];
+    const estimatedHeight = testLine.length * charAdvanceY;
+    if (estimatedHeight > maxHeight && n > 0) {
       lines.push(line);
       line = chars[n];
     } else {
