@@ -84,12 +84,19 @@ export default function Editor() {
         });
       };
 
+      // Render immediately with whatever fonts are available
+      doRender();
+
+      // Ensure we re-render once fonts have fully loaded. Since we inject dynamic text 
+      // into the DOM, the browser will fetch needed unicode ranges.
       if (document.fonts) {
-        const textToLoad = `${texts.title}${texts.message}0123456789.`;
-        const fontStr = `16px ${fontFamily}`;
-        document.fonts.load(fontStr, textToLoad).then(doRender).catch(doRender);
-      } else {
-        doRender();
+        document.fonts.ready.then(() => {
+          doRender();
+          // Fallback timer: Canvas sometimes needs a short delay after document.fonts.ready 
+          // to fully synthesize/render new characters in some browsers (e.g. Safari).
+          setTimeout(doRender, 150);
+          setTimeout(doRender, 500);
+        });
       }
     }
   }, [imageElement, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
@@ -153,7 +160,9 @@ export default function Editor() {
       {/* Hidden Font Preloader to force network requests */}
       <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}>
         {FONT_OPTIONS.map((font, idx) => (
-          <span key={idx} style={{ fontFamily: font.value }}>字體載入載入 preload</span>
+          <span key={idx} style={{ fontFamily: font.value }}>
+            字體載入 preload {texts.title} {texts.message} 0123456789
+          </span>
         ))}
       </div>
       
