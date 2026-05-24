@@ -184,8 +184,8 @@ export function renderCanvas({
 
 function getFontString(fontSize: number, fontFamily: string) {
   // Use normal weight for handwriting and custom fonts to prevent synthetic bolding 
-  // from breaking Canvas font matching on some devices (like Android).
-  const isCustomHandwriting = fontFamily.includes('LXGW WenKai') || fontFamily.includes('ChenYuluoyan');
+  // from breaking Canvas font matching on some devices (like Android and iOS Safari).
+  const isCustomHandwriting = fontFamily.includes('WenKai') || fontFamily.includes('Zhi Mang Xing') || fontFamily.includes('cursive');
   const weight = isCustomHandwriting ? 'normal' : 'bold';
   return `${weight} ${Math.floor(fontSize)}px ${fontFamily}`;
 }

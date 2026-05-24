@@ -8,7 +8,7 @@ const FONT_OPTIONS = [
   { label: '系統黑體', value: '"Noto Sans TC", sans-serif' },
   { label: '古典明體', value: '"Noto Serif TC", serif' },
   { label: '經典楷體', value: '"LXGW WenKai TC", serif' },
-  { label: '手寫行書', value: '"ChenYuluoyan", "LXGW WenKai TC", cursive' }
+  { label: '手寫行書', value: '"Zhi Mang Xing", "LXGW WenKai TC", cursive' }
 ];
 
 export default function Editor() {
@@ -31,7 +31,7 @@ export default function Editor() {
   // Pre-load fonts and force canvas redraw when ready
   useEffect(() => {
     // Explicitly load known web fonts to ensure canvas has them ready
-    const fontsToLoad = ['"Noto Sans TC"', '"Noto Serif TC"', '"LXGW WenKai TC"', '"ChenYuluoyan"'];
+    const fontsToLoad = ['"Noto Sans TC"', '"Noto Serif TC"', '"LXGW WenKai TC"', '"Zhi Mang Xing"'];
     
     Promise.all(
       fontsToLoad.map(f => document.fonts.load(`16px ${f}`).catch(console.error))
