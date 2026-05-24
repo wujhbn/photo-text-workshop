@@ -291,6 +291,13 @@ export default function Editor() {
               </select>
             </div>
             <div>
+              <label className="text-xs text-gray-500 mb-1 block">排版方向</label>
+              <div className="bg-gray-100 p-1 rounded-lg flex gap-1 h-[36px]">
+                <button title="橫書" onClick={() => setIsVertical(false)} className={`flex-1 flex justify-center items-center rounded-md text-sm font-bold transition ${!isVertical ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] text-green-600' : 'text-gray-500 hover:bg-gray-200'}`}>橫書</button>
+                <button title="直書" onClick={() => setIsVertical(true)} className={`flex-1 flex justify-center items-center rounded-md text-sm font-bold transition ${isVertical ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] text-green-600' : 'text-gray-500 hover:bg-gray-200'}`}>直書</button>
+              </div>
+            </div>
+            <div className="col-span-2 pt-2">
               <label className="text-xs text-gray-500 mb-2 block">對齊方式</label>
               <div className="bg-gray-100 p-1 rounded-lg flex gap-1 h-[36px]">
                 <button title="靠左" onClick={() => setTextAlign('left')} className={`flex-1 flex justify-center items-center rounded-md transition ${textAlign === 'left' ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] text-green-600' : 'text-gray-500 hover:bg-gray-200'}`}><AlignLeft size={18} /></button>
@@ -345,18 +352,6 @@ export default function Editor() {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-gray-100 pt-4 pb-4">
-            <span className="text-sm font-bold text-gray-600 flex items-center gap-2">
-              <AlignVerticalJustifyCenter size={16} /> 直式排版
-            </span>
-            <button 
-              onClick={() => setIsVertical(!isVertical)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isVertical ? 'bg-green-500' : 'bg-gray-300'}`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVertical ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-          </div>
-
           <div className="flex items-center justify-between border-t border-gray-100 pt-4">
             <span className="text-sm font-bold text-gray-600">顯示日期</span>
             <button 
