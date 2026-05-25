@@ -167,10 +167,10 @@ export default function Editor() {
       </div>
       
       {/* Header */}
-      <header className="bg-gray-50 flex-shrink-0 flex items-center justify-start px-4 pt-6 pb-2 z-10 pt-safe">
-        <div className="px-6 py-2.5 bg-white text-gray-800 border border-gray-200 rounded-full font-bold tracking-wider text-2xl shadow-sm">
-          長輩圖工坊
-        </div>
+      <header className="bg-gradient-to-r from-green-600 to-green-500 shadow-sm flex-shrink-0 flex items-center justify-center px-4 py-5 z-10 pt-[max(env(safe-area-inset-top),1.25rem)]">
+        <h1 className="text-white font-black tracking-widest text-3xl drop-shadow-sm">
+          相片文字工場
+        </h1>
       </header>
 
       {/* Main Content Area - Scrollable */}

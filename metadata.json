@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "相片文字工場",
+  "description": "相片文字工場 app",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
