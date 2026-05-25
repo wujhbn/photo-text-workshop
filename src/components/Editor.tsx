@@ -16,6 +16,8 @@ export default function Editor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
+  const [imageOpacity, setImageOpacity] = useState(1.0);
+  const [imageExposure, setImageExposure] = useState(1.0);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getCurrentTimeOfDay());
   const [texts, setTexts] = useState(generateCopy(timeOfDay));
   const [templateId, setTemplateId] = useState<TemplateId>('normal');
@@ -71,6 +73,8 @@ export default function Editor() {
         renderCanvas({
           canvas: canvasRef.current,
           imageElement,
+          imageOpacity,
+          imageExposure,
           template: getTemplate(templateId),
           texts,
           fontSizeFactor,
@@ -99,7 +103,7 @@ export default function Editor() {
         });
       }
     }
-  }, [imageElement, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
+  }, [imageElement, imageOpacity, imageExposure, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -167,8 +171,8 @@ export default function Editor() {
       </div>
       
       {/* Header */}
-      <header className="bg-gradient-to-r from-green-600 to-green-500 shadow-sm flex-shrink-0 flex items-center justify-center px-4 py-5 z-10 pt-[max(env(safe-area-inset-top),1.25rem)]">
-        <h1 className="text-white font-black tracking-widest text-3xl drop-shadow-sm">
+      <header className="bg-gradient-to-r from-green-600 to-green-500 shadow-sm flex-shrink-0 flex items-center justify-center px-4 py-4 z-10 pt-[max(env(safe-area-inset-top),1rem)]">
+        <h1 className="text-white font-black tracking-widest text-[28px] drop-shadow-md" style={{ fontFamily: '"LXGW WenKai TC", serif', fontWeight: 900 }}>
           相片文字工房
         </h1>
       </header>
@@ -176,20 +180,23 @@ export default function Editor() {
       {/* Main Content Area - Scrollable */}
       <main className="flex-1 overflow-y-auto w-full max-w-[500px] mx-auto px-4 pb-24 space-y-6 pt-4">
         
-        {/* Canvas Preview */}
-        <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative" style={{ aspectRatio: '4/5' }}>
-           <canvas 
-            ref={canvasRef}
-            width={1080}
-            height={1350}
-            className="w-full h-full object-contain"
-           />
-           {!imageElement && (
-             <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80">
-               <span className="text-gray-500 animate-pulse">正在載入畫布...</span>
-             </div>
-           )}
-        </div>
+      {/* Canvas Preview */}
+      <div 
+        className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative transition-all duration-300" 
+        style={{ aspectRatio: '4/5' }}
+      >
+         <canvas 
+          ref={canvasRef}
+          width={1080}
+          height={1350}
+          className="w-full h-full object-contain"
+         />
+         {!imageElement && (
+           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 text-gray-400">
+             <span className="animate-pulse">正在載入畫布...</span>
+           </div>
+         )}
+      </div>
 
         {/* Input Controls */}
         <div className="grid grid-cols-2 gap-3">
@@ -250,6 +257,27 @@ export default function Editor() {
                 {t.name}
               </button>
             ))}
+          </div>
+          
+          <div className="mt-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100 grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-gray-600 mb-2 flex items-center gap-1">不透明度 ({Math.round(imageOpacity * 100)}%)</label>
+              <input 
+                type="range" min="0.1" max="1.0" step="0.05" 
+                value={imageOpacity} 
+                onChange={(e) => setImageOpacity(parseFloat(e.target.value))}
+                className="w-full accent-green-600"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-2 flex items-center gap-1">曝光度 ({Math.round(imageExposure * 100)}%)</label>
+              <input 
+                type="range" min="0" max="2.0" step="0.1" 
+                value={imageExposure} 
+                onChange={(e) => setImageExposure(parseFloat(e.target.value))}
+                className="w-full accent-green-600"
+              />
+            </div>
           </div>
         </div>
 

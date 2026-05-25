@@ -3,6 +3,8 @@ import { Template } from './templates';
 export interface CanvasRenderOptions {
   canvas: HTMLCanvasElement;
   imageElement: HTMLImageElement | null;
+  imageOpacity?: number;
+  imageExposure?: number;
   template: Template;
   texts: { title: string; message: string };
   fontSizeFactor: number;
@@ -18,6 +20,8 @@ export interface CanvasRenderOptions {
 export function renderCanvas({
   canvas,
   imageElement,
+  imageOpacity = 1.0,
+  imageExposure = 1.0,
   template,
   texts,
   fontSizeFactor,
@@ -42,6 +46,7 @@ export function renderCanvas({
   if (imageElement) {
     const imgAspect = imageElement.width / imageElement.height;
     const canvasAspect = width / height;
+    
     let drawW, drawH, drawX, drawY;
 
     if (imgAspect > canvasAspect) {
@@ -59,12 +64,38 @@ export function renderCanvas({
     // Apply image filter from template
     if (template.imageFilter) {
       ctx.filter = template.imageFilter;
+    } else {
+      ctx.filter = 'none';
     }
     
+    const prevAlpha = ctx.globalAlpha;
+    ctx.globalAlpha = imageOpacity;
     ctx.drawImage(imageElement, drawX, drawY, drawW, drawH);
+    ctx.globalAlpha = prevAlpha;
     
     // Reset filter
     ctx.filter = 'none';
+
+    // Bulletproof manual exposure adjustment overlay
+    if (imageExposure !== 1.0) {
+      ctx.save();
+      ctx.globalCompositeOperation = imageExposure > 1.0 ? 'screen' : 'multiply';
+      ctx.fillStyle = imageExposure > 1.0 ? 'white' : 'black';
+      
+      // Calculate opacity for the blending mode
+      // For screen (brighten): 1.0 -> 0 opacity, 2.0 -> 1.0 opacity
+      // For multiply (darken): 1.0 -> 0 opacity, 0.0 -> 1.0 opacity
+      let alpha = 0;
+      if (imageExposure > 1.0) {
+        alpha = (imageExposure - 1.0) * 0.8; // tune strength
+      } else {
+        alpha = (1.0 - imageExposure) * 0.8; // tune strength
+      }
+      
+      ctx.globalAlpha = Math.min(1.0, Math.max(0, alpha));
+      ctx.fillRect(drawX, drawY, drawW, drawH);
+      ctx.restore();
+    }
 
     // Apply Vignette overlay
     if (template.vignette && template.vignette > 0) {
