@@ -18,7 +18,7 @@ export default function Editor() {
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getCurrentTimeOfDay());
   const [texts, setTexts] = useState(generateCopy(timeOfDay));
-  const [templateId, setTemplateId] = useState<TemplateId>('golden');
+  const [templateId, setTemplateId] = useState<TemplateId>('normal');
   const [fontFamily, setFontFamily] = useState<string>(FONT_OPTIONS[0].value);
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
   const [strokeStrength, setStrokeStrength] = useState(50);
@@ -169,7 +169,7 @@ export default function Editor() {
       {/* Header */}
       <header className="bg-gradient-to-r from-green-600 to-green-500 shadow-sm flex-shrink-0 flex items-center justify-center px-4 py-5 z-10 pt-[max(env(safe-area-inset-top),1.25rem)]">
         <h1 className="text-white font-black tracking-widest text-3xl drop-shadow-sm">
-          相片文字工場
+          相片文字工房
         </h1>
       </header>
 
@@ -233,7 +233,7 @@ export default function Editor() {
         <div>
           <div className="flex items-center justify-between mb-2">
              <h2 className="text-sm font-bold text-gray-600 flex items-center gap-1">
-                <LayoutTemplate size={16} /> 佈景主題
+                <Images size={16} /> 相片風格
              </h2>
           </div>
           <div className="flex overflow-x-auto gap-2 pb-2 snap-x hide-scrollbar">
@@ -341,7 +341,7 @@ export default function Editor() {
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">文字位置 (上下)</label>
                 <input 
-                  type="range" min="5" max="80" step="1" 
+                  type="range" min="0" max="100" step="1" 
                   value={textVerticalPos} 
                   onChange={(e) => setTextVerticalPos(parseInt(e.target.value))}
                   className="w-full accent-green-600 mt-2"

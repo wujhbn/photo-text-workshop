@@ -55,7 +55,25 @@ export function renderCanvas({
       drawX = 0;
       drawY = (height - drawH) / 2;
     }
+    
+    // Apply image filter from template
+    if (template.imageFilter) {
+      ctx.filter = template.imageFilter;
+    }
+    
     ctx.drawImage(imageElement, drawX, drawY, drawW, drawH);
+    
+    // Reset filter
+    ctx.filter = 'none';
+
+    // Apply Vignette overlay
+    if (template.vignette && template.vignette > 0) {
+      const g = ctx.createRadialGradient(width/2, height/2, Math.min(width, height) * 0.2, width/2, height/2, Math.max(width, height) * 0.8);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(1, `rgba(0,0,0,${template.vignette})`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, width, height);
+    }
   } else {
     ctx.fillStyle = '#E0E0E0';
     ctx.fillRect(0, 0, width, height);
@@ -82,73 +100,147 @@ export function renderCanvas({
   const actualTextSize = baseTextSize * fontSizeFactor;
 
   if (isVertical) {
-    let rightOffset = width * (1 - textVerticalPos / 100);
-    // restrict to canvas
-    if (rightOffset > width - marginX - actualTitleSize / 2) {
-      rightOffset = width - marginX - actualTitleSize / 2;
+    const hasTitle = texts.title && texts.title.trim() !== '';
+    
+    // 1. Calculate total block width
+    let totalWidth = 0;
+    const colGap = 15 * fontSizeFactor;
+    if (hasTitle) {
+      totalWidth += actualTitleSize;
     }
     
-    let curY = marginY;
-    const titleChars = texts.title.split('');
-    let cy = curY + actualTitleSize * 0.5;
-    titleChars.forEach((ch) => {
-      drawOutlinedText(
-        ctx, ch, rightOffset, cy, template.titleColor, strokeColor, actualTitleSize, fontFamily, 'center', strokeStrength, template.shadowColor
-      );
-      cy += actualTitleSize * 1.1;
-    });
-
-    rightOffset -= (actualTitleSize * 0.5 + 80 * fontSizeFactor);
-    const colGap = 15 * fontSizeFactor;
-
+    const messageLinesInfo: { text: string; width: number }[] = [];
     if (texts.message) {
+      if (hasTitle) totalWidth += 80 * fontSizeFactor;
       const rawLines = texts.message.split('\n');
-      rawLines.forEach((textLine) => {
+      rawLines.forEach((textLine, idx) => {
         const subLines = wrapTextVertical(safeHeight, textLine, actualTextSize * 1.1);
         subLines.forEach(line => {
+          let lw = 0;
           if (line.trim() === '') {
-            rightOffset -= actualTextSize * 0.8;
-            return;
+            lw = actualTextSize * 0.8;
+          } else {
+            lw = actualTextSize * 1.35;
           }
-          
-          let y = marginY + actualTextSize * 0.5;
-          // Apply horizontal alignment for vertical lines (if alignment isn't start/top)
-          const expectedLineHeight = line.length * (actualTextSize * 1.1);
-          if (textAlign === 'center') {
-             y += (safeHeight - expectedLineHeight) / 2;
-          } else if (textAlign === 'right') { // Bottom aligned
-             y += (safeHeight - expectedLineHeight);
-          }
-
-          for (let i = 0; i < line.length; i++) {
-            drawOutlinedText(ctx, line[i], rightOffset, y, template.textColor, strokeColor, actualTextSize, fontFamily, 'center', strokeStrength, template.shadowColor);
-            y += actualTextSize * 1.1;
-          }
-          rightOffset -= actualTextSize * 1.35;
+          messageLinesInfo.push({ text: line, width: lw });
+          totalWidth += lw;
         });
-        rightOffset -= colGap;
+        if (idx < rawLines.length - 1) {
+          totalWidth += colGap;
+          messageLinesInfo.push({ text: 'GAP', width: colGap });
+        }
+      });
+    }
+
+    let blockCenterX = width * (1 - textVerticalPos / 100);
+    // restrict center so the block doesn't go completely off-screen
+    if (blockCenterX + totalWidth / 2 > width - 10) {
+      blockCenterX = width - 10 - totalWidth / 2;
+    }
+    
+    let rightOffset = blockCenterX + totalWidth / 2;
+
+    if (hasTitle) {
+      let curY = marginY;
+      const titleChars = texts.title.split('');
+      let cy = curY + actualTitleSize * 0.5;
+      titleChars.forEach((ch) => {
+        drawOutlinedText(
+          ctx, ch, rightOffset - actualTitleSize / 2, cy, template.titleColor, strokeColor, actualTitleSize, fontFamily, 'center', strokeStrength, template.shadowColor
+        );
+        cy += actualTitleSize * 1.1;
+      });
+
+      rightOffset -= (actualTitleSize + 80 * fontSizeFactor);
+    }
+
+    if (texts.message) {
+      messageLinesInfo.forEach(info => {
+        if (info.text === 'GAP') {
+          rightOffset -= info.width;
+          return;
+        }
+        if (info.text.trim() === '') {
+          rightOffset -= info.width;
+          return;
+        }
+        
+        let y = marginY + actualTextSize * 0.5;
+        const expectedLineHeight = info.text.length * (actualTextSize * 1.1);
+        if (textAlign === 'center') {
+           y += (safeHeight - expectedLineHeight) / 2;
+        } else if (textAlign === 'right') { // Bottom aligned
+           y += (safeHeight - expectedLineHeight);
+        }
+
+        for (let i = 0; i < info.text.length; i++) {
+          drawOutlinedText(ctx, info.text[i], rightOffset - actualTextSize / 2, y, template.textColor, strokeColor, actualTextSize, fontFamily, 'center', strokeStrength, template.shadowColor);
+          y += actualTextSize * 1.1;
+        }
+        rightOffset -= info.width;
       });
     }
 
   } else {
-    // Draw Title
-    const titleY = height * (textVerticalPos / 100);
-    drawOutlinedText(
-      ctx, 
-      texts.title, 
-      width / 2, 
-      titleY, 
-      template.titleColor, 
-      strokeColor, 
-      actualTitleSize,
-      fontFamily,
-      'center',
-      strokeStrength,
-      template.shadowColor
-    );
-  
-    let currentTop = titleY + actualTitleSize * 0.5 + 80 * fontSizeFactor;
+    const hasTitle = texts.title && texts.title.trim() !== '';
+
+    // 1. Calculate total block height
+    let totalHeight = 0;
     const paragraphGap = 15 * fontSizeFactor;
+    if (hasTitle) {
+      totalHeight += actualTitleSize;
+    }
+
+    const messageLinesInfo: { text: string; height: number }[] = [];
+    if (texts.message) {
+      if (hasTitle) totalHeight += 80 * fontSizeFactor;
+      const rawLines = texts.message.split('\n');
+      rawLines.forEach((textLine, idx) => {
+        const subLines = wrapText(ctx, textLine, safeWidth, actualTextSize, fontFamily);
+        subLines.forEach(line => {
+          let lh = 0;
+          if (line.trim() === '') {
+            lh = actualTextSize * 0.8;
+          } else {
+            lh = actualTextSize * 1.35;
+          }
+          messageLinesInfo.push({ text: line, height: lh });
+          totalHeight += lh;
+        });
+        if (idx < rawLines.length - 1) {
+          totalHeight += paragraphGap;
+          messageLinesInfo.push({ text: 'GAP', height: paragraphGap });
+        }
+      });
+    }
+
+    let blockCenterY = height * (textVerticalPos / 100);
+    // restrict center so block doesn't go off screen
+    if (blockCenterY - totalHeight / 2 < 10) {
+      blockCenterY = 10 + totalHeight / 2;
+    }
+    if (blockCenterY + totalHeight / 2 > height - 10) {
+      blockCenterY = height - 10 - totalHeight / 2;
+    }
+
+    let currentTop = blockCenterY - totalHeight / 2;
+
+    if (hasTitle) {
+      drawOutlinedText(
+        ctx, 
+        texts.title, 
+        width / 2, 
+        currentTop + actualTitleSize / 2, 
+        template.titleColor, 
+        strokeColor, 
+        actualTitleSize,
+        fontFamily,
+        'center',
+        strokeStrength,
+        template.shadowColor
+      );
+      currentTop += actualTitleSize + 80 * fontSizeFactor;
+    }
   
     // Alignments
     let textX = width / 2;
@@ -157,18 +249,17 @@ export function renderCanvas({
   
     // Draw Message
     if (texts.message) {
-      const rawLines = texts.message.split('\n');
-      rawLines.forEach((textLine) => {
-        const subLines = wrapText(ctx, textLine, safeWidth, actualTextSize, fontFamily);
-        subLines.forEach(line => {
-          if (line.trim() === '') {
-            currentTop += actualTextSize * 0.8;
-            return;
-          }
-          drawOutlinedText(ctx, line, textX, currentTop + actualTextSize * 0.5, template.textColor, strokeColor, actualTextSize, fontFamily, textAlign, strokeStrength, template.shadowColor);
-          currentTop += actualTextSize * 1.35;
-        });
-        currentTop += paragraphGap;
+      messageLinesInfo.forEach(info => {
+        if (info.text === 'GAP') {
+          currentTop += info.height;
+          return;
+        }
+        if (info.text.trim() === '') {
+          currentTop += info.height;
+          return;
+        }
+        drawOutlinedText(ctx, info.text, textX, currentTop + actualTextSize * 0.5, template.textColor, strokeColor, actualTextSize, fontFamily, textAlign, strokeStrength, template.shadowColor);
+        currentTop += info.height;
       });
     }
   }
