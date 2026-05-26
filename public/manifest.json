@@ -1,6 +1,6 @@
 {
-  "name": "照片文字工房",
-  "short_name": "文字工房",
+  "name": "相片文字工房",
+  "short_name": "相片文字工房",
   "description": "製作結合照片宇文字的產生器",
   "start_url": "/",
   "display": "standalone",
