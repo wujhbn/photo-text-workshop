@@ -1,7 +1,7 @@
 {
-  "name": "台灣長輩圖工房",
-  "short_name": "長輩圖工坊",
-  "description": "製作充滿正能量的台灣長輩圖產生器",
+  "name": "照片文字工房",
+  "short_name": "文字工房",
+  "description": "製作結合照片宇文字的產生器",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
