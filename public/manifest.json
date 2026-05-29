@@ -1,7 +1,6 @@
 {
   "name": "相片文字工房",
   "short_name": "相片文字工房",
-  "description": "製作結合照片宇文字的產生器",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -10,20 +9,17 @@
     {
       "src": "/icon-192x192-v3.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icon-512x512-v3.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/apple-touch-icon-v3.png",
       "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }

@@ -29,6 +29,7 @@ export default function Editor() {
   const [isVertical, setIsVertical] = useState(false);
   const [customStrokeColor, setCustomStrokeColor] = useState<string | null>(null);
   const [showDate, setShowDate] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Pre-load fonts and force canvas redraw when ready
   useEffect(() => {
@@ -137,7 +138,8 @@ export default function Editor() {
   };
 
   const shareImage = async () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || isSharing) return;
+    setIsSharing(true);
     try {
       const blob = await new Promise<Blob | null>(resolve => canvasRef.current!.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('Could not create blob');
@@ -147,15 +149,20 @@ export default function Editor() {
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: '滿滿正能量',
-          text: '與您分享溫暖的祝福！',
           files: [file],
         });
       } else {
         alert('您的瀏覽器不支援直接分享圖片，請先點擊「下載」儲存後，再傳到 LINE 哦！');
       }
-    } catch (error) {
-      console.error('Share failed', error);
-      alert('分享失敗，請改用「下載」功能。');
+    } catch (error: any) {
+      if (error && (error.name === 'AbortError' || error.message?.toLowerCase().includes('canc') || error.message?.toLowerCase().includes('abort'))) {
+        console.log('Share was cancelled by the user:', error);
+      } else {
+        console.error('Share failed', error);
+        alert('分享失敗，請改用「下載」功能。');
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -425,10 +432,11 @@ export default function Editor() {
           </button>
           <button 
             onClick={shareImage}
-            className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white py-3 px-4 rounded-xl font-bold hover:bg-green-600 transition active:scale-95 shadow-md shadow-green-500/30"
+            disabled={isSharing}
+            className={`flex-1 flex items-center justify-center gap-2 bg-green-500 text-white py-3 px-4 rounded-xl font-bold hover:bg-green-600 transition active:scale-95 shadow-md shadow-green-500/30 ${isSharing ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <Share2 size={20} />
-            分享至 LINE
+            <Share2 size={20} className={isSharing ? "animate-spin" : ""} />
+            {isSharing ? '正在啟動分享...' : '分享至 LINE'}
           </button>
         </div>
       </footer>
