@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&family=LXGW+WenKai+TC&family=Zhi+Mang+Xing&family=Yuji+Syuku&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&family=LXGW+WenKai+TC&family=Zhi+Mang+Xing&family=Yuji+Syuku&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
 @import "tailwindcss";
 
 @layer utilities {
@@ -18,4 +18,9 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
+  
+  .q-btn {
+    @apply transition-transform active:translate-y-1 active:shadow-none;
+  }
 }
+
