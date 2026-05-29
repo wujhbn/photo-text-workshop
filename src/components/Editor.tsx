@@ -148,7 +148,6 @@ export default function Editor() {
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: '滿滿正能量',
           files: [file],
         });
       } else {
