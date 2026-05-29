@@ -125,8 +125,8 @@ export function renderCanvas({
   const safeWidth = width - marginX * 2;
   const marginY = 80;
   const safeHeight = height - marginY * 2;
-  const baseTitleSize = template.id === 'large' ? 300 : 220;
-  const baseTextSize = template.id === 'large' ? 90 : 70;
+  const baseTitleSize = (template.id as string) === 'large' ? 300 : 220;
+  const baseTextSize = (template.id as string) === 'large' ? 90 : 70;
   const actualTitleSize = baseTitleSize * fontSizeFactor;
   const actualTextSize = baseTextSize * fontSizeFactor;
 
