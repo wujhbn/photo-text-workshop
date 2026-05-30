@@ -190,7 +190,7 @@ export default function Editor() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full max-w-[500px] lg:max-w-5xl mx-auto">
         
         {/* Canvas Section - Fixed on mobile, side-by-side on desktop */}
-        <div className="flex-shrink-0 z-10 w-full lg:w-1/2 h-[50vh] min-h-[280px] lg:h-full flex items-center justify-center border-b-2 border-pink-100 lg:border-b-0 lg:border-r border-pink-100/50 bg-[#fff7f9] relative p-5 lg:p-8">
+        <div className="max-lg:flex-[4_1_0%] z-10 w-full lg:w-1/2 min-h-[220px] lg:h-full flex items-center justify-center border-b-2 border-pink-100 lg:border-b-0 lg:border-r border-pink-100/50 bg-[#fff7f9] relative p-1 lg:p-8">
           <div className="relative w-full h-full flex items-center justify-center">
              <canvas 
               ref={canvasRef}
@@ -212,7 +212,7 @@ export default function Editor() {
         </div>
 
         {/* Scrollable Settings Section */}
-        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 pb-[120px] lg:w-1/2 hide-scrollbar">
+        <div className="max-lg:flex-[3_1_0%] lg:flex-1 overflow-y-auto px-4 py-3 space-y-5 pb-[100px] lg:w-1/2 hide-scrollbar w-full">
 
         {/* Input Controls */}
         <div className="grid grid-cols-2 gap-3">
@@ -443,21 +443,21 @@ export default function Editor() {
       </div>
 
       {/* Fixed Bottom Action Bar */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-[#fffcfd]/90 backdrop-blur-md border-t-2 border-pink-100 p-3 pb-safe-offset-3 shadow-[0_-10px_20px_rgba(255,150,180,0.05)] z-20">
-        <div className="max-w-[500px] mx-auto flex gap-3 pr-1 pl-1">
+      <footer className="fixed bottom-0 left-0 right-0 bg-[#fffcfd]/90 backdrop-blur-md border-t-2 border-pink-100 p-2 pb-safe-offset-2 shadow-[0_-10px_20px_rgba(255,150,180,0.05)] z-20">
+        <div className="max-w-[500px] mx-auto flex gap-2.5 px-2">
            <button 
             onClick={downloadImage}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-[#90caf9] text-white py-2.5 px-3 rounded-xl text-sm font-black transition active:scale-95 shadow-[0_3px_0_theme(colors.blue.400)] q-btn mb-1"
+            className="flex-1 flex items-center justify-center gap-1 bg-[#90caf9] text-white py-2 px-3 rounded-xl text-[13px] font-bold transition active:scale-95 shadow-[0_3px_0_theme(colors.blue.400)] q-btn mb-1"
           >
-            <Download size={18} strokeWidth={2.5} />
+            <Download size={16} strokeWidth={2.5} />
             儲存圖片
           </button>
           <button 
             onClick={shareImage}
             disabled={isSharing}
-            className={`flex-[1.5] flex items-center justify-center gap-1.5 bg-[#ff80ab] text-white py-2.5 px-3 rounded-xl text-sm font-black transition shadow-[0_3px_0_theme(colors.pink.500)] q-btn mb-1 ${isSharing ? 'opacity-50 cursor-not-allowed shadow-none translate-y-1' : ''}`}
+            className={`flex-[1.5] flex items-center justify-center gap-1 bg-[#ff80ab] text-white py-2 px-3 rounded-xl text-[13px] font-bold transition shadow-[0_3px_0_theme(colors.pink.500)] q-btn mb-1 ${isSharing ? 'opacity-50 cursor-not-allowed shadow-none translate-y-1' : ''}`}
           >
-            <Share2 size={18} strokeWidth={2.5} className={isSharing ? "animate-spin" : ""} />
+            <Share2 size={16} strokeWidth={2.5} className={isSharing ? "animate-spin" : ""} />
             {isSharing ? '啟動中...' : '分享至 LINE'}
           </button>
         </div>
