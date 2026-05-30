@@ -30,6 +30,7 @@ export default function Editor() {
   const [isVertical, setIsVertical] = useState(false);
   const [customStrokeColor, setCustomStrokeColor] = useState<string | null>(null);
   const [showDate, setShowDate] = useState(true);
+  const [signature, setSignature] = useState('');
   const [isSharing, setIsSharing] = useState(false);
 
   // Pre-load fonts and force canvas redraw when ready
@@ -79,6 +80,7 @@ export default function Editor() {
           imageExposure,
           template: getTemplate(templateId),
           texts,
+          signature,
           fontSizeFactor,
           fontFamily,
           strokeStrength,
@@ -105,7 +107,7 @@ export default function Editor() {
         });
       }
     }
-  }, [imageElement, imageOpacity, imageExposure, templateId, texts, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
+  }, [imageElement, imageOpacity, imageExposure, templateId, texts, signature, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -167,7 +169,7 @@ export default function Editor() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#fff7f9] pb-safe font-['Zen_Maru_Gothic',sans-serif]">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#fff7f9] font-['Zen_Maru_Gothic',sans-serif]">
       {/* Hidden Font Preloader to force network requests */}
       <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}>
         {FONT_OPTIONS.map((font, idx) => (
@@ -178,32 +180,39 @@ export default function Editor() {
       </div>
       
       {/* Header */}
-      <header className="bg-gradient-to-r from-pink-300 via-rose-300 to-pink-300 shadow-sm flex-shrink-0 flex items-center justify-center px-4 py-4 z-10 pt-[max(env(safe-area-inset-top),1rem)]">
-        <h1 className="text-white font-black tracking-widest text-[28px] drop-shadow-[0_2px_4px_rgba(255,100,150,0.4)]" style={{ fontFamily: '"Zen Maru Gothic", sans-serif', fontWeight: 900 }}>
+      <header className="bg-gradient-to-r from-pink-300 via-rose-300 to-pink-300 shadow-sm flex-shrink-0 flex items-center justify-center px-4 py-3 z-10 pt-[max(env(safe-area-inset-top),0.75rem)]">
+        <h1 className="text-white font-black tracking-widest text-[20px] drop-shadow-[0_2px_4px_rgba(255,100,150,0.4)]" style={{ fontFamily: '"Zen Maru Gothic", sans-serif', fontWeight: 900 }}>
           相片文字工房
         </h1>
       </header>
 
-      {/* Main Content Area - Scrollable */}
-      <main className="flex-1 overflow-y-auto w-full max-w-[500px] mx-auto px-4 pb-24 space-y-6 pt-4">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full max-w-[500px] lg:max-w-5xl mx-auto">
         
-      {/* Canvas Preview */}
-      <div 
-        className="w-full bg-white rounded-3xl shadow-[0_8px_20px_rgba(255,150,180,0.15)] border-4 border-white overflow-hidden relative transition-all duration-300" 
-        style={{ aspectRatio: '4/5' }}
-      >
-         <canvas 
-          ref={canvasRef}
-          width={1080}
-          height={1350}
-          className="w-full h-full object-contain"
-         />
-         {!imageElement && (
-           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 text-gray-400">
-             <span className="animate-pulse">正在載入畫布...</span>
-           </div>
-         )}
-      </div>
+        {/* Canvas Section - Fixed on mobile, side-by-side on desktop */}
+        <div className="flex-shrink-0 z-10 w-full lg:w-1/2 h-[38vh] min-h-[220px] lg:h-full flex items-center justify-center border-b-2 border-pink-100 lg:border-b-0 lg:border-r border-pink-100/50 bg-[#fff7f9] relative p-5 lg:p-8">
+          <div className="relative w-full h-full flex items-center justify-center">
+             <canvas 
+              ref={canvasRef}
+              width={1080}
+              height={1350}
+              className="bg-white rounded-[20px] shadow-[0_8px_20px_rgba(255,150,180,0.15)] border-[4px] border-white transition-all duration-300 block"
+              style={{
+                maxHeight: '100%',
+                maxWidth: '100%',
+                objectFit: 'contain'
+              }}
+             />
+             {!imageElement && (
+               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-gray-400 z-10">
+                 <span className="animate-pulse bg-white/90 px-4 py-2 rounded-xl font-bold text-sm shadow-sm">正在載入畫布...</span>
+               </div>
+             )}
+          </div>
+        </div>
+
+        {/* Scrollable Settings Section */}
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 pb-[120px] lg:w-1/2 hide-scrollbar">
 
         {/* Input Controls */}
         <div className="grid grid-cols-2 gap-3">
@@ -407,7 +416,19 @@ export default function Editor() {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-1">
+          <div className="space-y-4 pt-1 mb-2">
+            <div>
+              <label className="text-xs text-gray-400 font-bold mb-1 block">自訂署名 (選填)</label>
+              <input 
+                type="text" 
+                value={signature} 
+                onChange={e => setSignature(e.target.value)} 
+                placeholder="例如：小明 敬上"
+                className="w-full bg-[#fffcfd] border-2 border-pink-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-pink-400 outline-none transition"
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-3 border-t border-pink-50">
             <span className="text-sm font-bold text-gray-500">顯示日期印章</span>
             <button 
               onClick={() => setShowDate(!showDate)}
@@ -418,7 +439,8 @@ export default function Editor() {
           </div>
         </div>
 
-      </main>
+        </div>
+      </div>
 
       {/* Fixed Bottom Action Bar */}
       <footer className="fixed bottom-0 left-0 right-0 bg-[#fffcfd]/90 backdrop-blur-md border-t-2 border-pink-100 p-4 pb-safe-offset-4 shadow-[0_-10px_20px_rgba(255,150,180,0.05)] z-20">

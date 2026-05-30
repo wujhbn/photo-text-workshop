@@ -7,6 +7,7 @@ export interface CanvasRenderOptions {
   imageExposure?: number;
   template: Template;
   texts: { title: string; message: string };
+  signature: string;
   fontSizeFactor: number;
   fontFamily: string;
   strokeStrength: number;
@@ -24,6 +25,7 @@ export function renderCanvas({
   imageExposure = 1.0,
   template,
   texts,
+  signature,
   fontSizeFactor,
   fontFamily,
   strokeStrength,
@@ -295,12 +297,30 @@ export function renderCanvas({
     }
   }
 
-  // Draw Date
+  // Draw Date and Signature
+  let bottomAnchorY = height - 60;
+
   if (showDate) {
     const d = new Date();
     const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-    const dateY = height - 60;
-    drawOutlinedText(ctx, dateStr, width - 60, dateY, 'rgba(255,255,255,0.8)', 'rgba(0,0,0,0.5)', 40, fontFamily, 'right', strokeStrength * 0.5, 'transparent');
+    drawOutlinedText(ctx, dateStr, width - 60, bottomAnchorY, 'rgba(255,255,255,0.8)', 'rgba(0,0,0,0.5)', 40, fontFamily, 'right', strokeStrength * 0.5, 'transparent');
+    bottomAnchorY -= 60;
+  }
+
+  if (signature && signature.trim() !== '') {
+    drawOutlinedText(
+      ctx,
+      signature,
+      width - 60,
+      bottomAnchorY,
+      template.textColor,
+      strokeColor,
+      Math.max(50, actualTextSize * 0.6),
+      fontFamily,
+      'right',
+      strokeStrength,
+      template.shadowColor
+    );
   }
 }
 
