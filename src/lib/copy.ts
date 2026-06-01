@@ -1,4 +1,4 @@
-export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
+export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'daily';
 
 const morningGreetings = [
   '早安，願您今天精神滿滿',
@@ -51,6 +51,10 @@ function getRandomItem(arr: string[]): string {
 }
 
 export function generateCopy(time: TimeOfDay): { title: string; message: string } {
+  if (time === 'daily') {
+    return { title: '', message: '' };
+  }
+
   let greetingObj = '';
   if (time === 'morning') greetingObj = getRandomItem(morningGreetings);
   else if (time === 'afternoon') greetingObj = getRandomItem(afternoonGreetings);

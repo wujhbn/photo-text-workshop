@@ -1,4 +1,4 @@
-import { ImagePlus, Images, LayoutTemplate, Share2, Download, RefreshCcw, Type, PenLine, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter } from 'lucide-react';
+import { ImagePlus, Images, LayoutTemplate, Share2, Download, RefreshCcw, Type, PenLine, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, Save } from 'lucide-react';
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { generateCopy, getCurrentTimeOfDay, TimeOfDay } from '../lib/copy';
 import { getTemplate, generateSampleBackground, TEMPLATES, TemplateId } from '../lib/templates';
@@ -17,21 +17,39 @@ export default function Editor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
+  const [hasCustomImage, setHasCustomImage] = useState(false);
   const [imageOpacity, setImageOpacity] = useState(1.0);
   const [imageExposure, setImageExposure] = useState(1.0);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getCurrentTimeOfDay());
   const [texts, setTexts] = useState(generateCopy(timeOfDay));
   const [templateId, setTemplateId] = useState<TemplateId>('normal');
-  const [fontFamily, setFontFamily] = useState<string>(FONT_OPTIONS[0].value);
-  const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
-  const [strokeStrength, setStrokeStrength] = useState(50);
-  const [textVerticalPos, setTextVerticalPos] = useState(25);
-  const [textAlign, setTextAlign] = useState<CanvasTextAlign>('center');
-  const [isVertical, setIsVertical] = useState(false);
-  const [customStrokeColor, setCustomStrokeColor] = useState<string | null>(null);
-  const [showDate, setShowDate] = useState(true);
-  const [signature, setSignature] = useState('');
+  const [fontFamily, setFontFamily] = useState<string>(() => localStorage.getItem('pref_fontFamily') || FONT_OPTIONS[0].value);
+  const [fontSizeFactor, setFontSizeFactor] = useState(() => Number(localStorage.getItem('pref_fontSizeFactor') || 1.0));
+  const [strokeStrength, setStrokeStrength] = useState(() => Number(localStorage.getItem('pref_strokeStrength') || 50));
+  const [textVerticalPos, setTextVerticalPos] = useState(() => Number(localStorage.getItem('pref_textVerticalPos') || 25));
+  const [textAlign, setTextAlign] = useState<CanvasTextAlign>(() => (localStorage.getItem('pref_textAlign') as CanvasTextAlign) || 'center');
+  const [isVertical, setIsVertical] = useState(() => localStorage.getItem('pref_isVertical') === 'true');
+  const [customStrokeColor, setCustomStrokeColor] = useState<string | null>(() => localStorage.getItem('pref_customStrokeColor'));
+  const [showDate, setShowDate] = useState(() => localStorage.getItem('pref_showDate') !== 'false');
+  const [signature, setSignature] = useState(() => localStorage.getItem('pref_signature') || '');
   const [isSharing, setIsSharing] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('pref_fontFamily', fontFamily);
+    localStorage.setItem('pref_fontSizeFactor', fontSizeFactor.toString());
+    localStorage.setItem('pref_strokeStrength', strokeStrength.toString());
+    localStorage.setItem('pref_textVerticalPos', textVerticalPos.toString());
+    localStorage.setItem('pref_textAlign', textAlign);
+    localStorage.setItem('pref_isVertical', isVertical.toString());
+    if (customStrokeColor) {
+      localStorage.setItem('pref_customStrokeColor', customStrokeColor);
+    } else {
+      localStorage.removeItem('pref_customStrokeColor');
+    }
+    localStorage.setItem('pref_showDate', showDate.toString());
+    localStorage.setItem('pref_signature', signature);
+  }, [fontFamily, fontSizeFactor, strokeStrength, textVerticalPos, textAlign, isVertical, customStrokeColor, showDate, signature]);
 
   // Pre-load fonts and force canvas redraw when ready
   useEffect(() => {
@@ -115,17 +133,30 @@ export default function Editor() {
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
-        img.onload = () => setImageElement(img);
+        img.onload = () => {
+          setImageElement(img);
+          setHasCustomImage(true);
+        };
         img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleTimeOfDayChange = (time: TimeOfDay) => {
+    setTimeOfDay(time);
+    setTexts(generateCopy(time));
+    if (!hasCustomImage) {
+      const img = new Image();
+      img.onload = () => setImageElement(img);
+      img.src = generateSampleBackground(time);
+    }
+  };
+
   const loadSampleImage = () => {
     const img = new Image();
     img.onload = () => setImageElement(img);
-    img.src = generateSampleBackground();
+    img.src = generateSampleBackground(timeOfDay);
   };
 
   const handleRegenerateText = () => {
@@ -241,13 +272,13 @@ export default function Editor() {
 
         {/* Time Segments */}
         <div className="bg-white p-2 rounded-2xl shadow-sm border border-pink-100 flex gap-2">
-          {(['morning', 'afternoon', 'evening'] as TimeOfDay[]).map(time => (
+          {(['morning', 'afternoon', 'evening', 'daily'] as TimeOfDay[]).map(time => (
             <button
               key={time}
-              onClick={() => setTimeOfDay(time)}
-              className={`flex-1 py-2 text-center rounded-xl font-bold transition-all ${timeOfDay === time ? 'bg-pink-400 text-white shadow-[0_3px_0_theme(colors.pink.500)] scale-105' : 'text-gray-400 bg-gray-50 hover:bg-pink-50'}`}
+              onClick={() => handleTimeOfDayChange(time)}
+              className={`flex-1 py-2 text-center rounded-xl font-bold transition-all text-sm sm:text-base ${timeOfDay === time ? 'bg-pink-400 text-white shadow-[0_3px_0_theme(colors.pink.500)] scale-105' : 'text-gray-400 bg-gray-50 hover:bg-pink-50'}`}
             >
-              {time === 'morning' ? '⛅️ 早安' : time === 'afternoon' ? '☀️ 午安' : '🌙 晚安'}
+              {time === 'morning' ? '⛅️ 早安' : time === 'afternoon' ? '☀️ 午安' : time === 'evening' ? '🌙 晚安' : '📅 日常'}
             </button>
           ))}
         </div>
@@ -339,6 +370,25 @@ export default function Editor() {
             <h2 className="text-sm font-bold text-pink-500 flex items-center gap-1">
               <Type size={16} /> 字體與排版
             </h2>
+             <button 
+               onClick={() => {
+                 localStorage.setItem('pref_fontFamily', fontFamily);
+                 localStorage.setItem('pref_fontSizeFactor', fontSizeFactor.toString());
+                 localStorage.setItem('pref_strokeStrength', strokeStrength.toString());
+                 localStorage.setItem('pref_textVerticalPos', textVerticalPos.toString());
+                 localStorage.setItem('pref_textAlign', textAlign);
+                 localStorage.setItem('pref_isVertical', isVertical.toString());
+                 if (customStrokeColor) localStorage.setItem('pref_customStrokeColor', customStrokeColor);
+                 else localStorage.removeItem('pref_customStrokeColor');
+                 
+                 setSaveSuccess(true);
+                 setTimeout(() => setSaveSuccess(false), 2000);
+               }}
+               className="flex items-center justify-center gap-1 bg-[#e8f5e9] text-green-600 py-1.5 px-3 rounded-xl border-2 border-green-200 text-sm font-bold hover:bg-green-100 transition q-btn shadow-[0_2px_0_theme(colors.green.200)]"
+             >
+               <Save size={14} />
+               {saveSuccess ? '已儲存' : '儲存'}
+             </button>
           </div>
 
           <div className="grid grid-cols-2 gap-5 border-b border-pink-50 pb-5">
