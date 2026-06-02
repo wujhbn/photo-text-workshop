@@ -175,6 +175,13 @@ export function renderCanvas({
 
     if (hasTitle) {
       let curY = marginY;
+      const expectedTitleHeight = texts.title.length * (actualTitleSize * 1.1);
+      if (textAlign === 'center') {
+        curY += (safeHeight - expectedTitleHeight) / 2;
+      } else if (textAlign === 'right') { // Bottom aligned
+        curY += (safeHeight - expectedTitleHeight);
+      }
+      
       const titleChars = texts.title.split('');
       let cy = curY + actualTitleSize * 0.5;
       titleChars.forEach((ch) => {
@@ -258,17 +265,21 @@ export function renderCanvas({
 
     let currentTop = blockCenterY - totalHeight / 2;
 
+    let titleX = width / 2;
+    if (textAlign === 'left') titleX = marginX + 20;
+    if (textAlign === 'right') titleX = width - marginX - 20;
+
     if (hasTitle) {
       drawOutlinedText(
         ctx, 
         texts.title, 
-        width / 2, 
+        titleX, 
         currentTop + actualTitleSize / 2, 
         template.titleColor, 
         strokeColor, 
         actualTitleSize,
         fontFamily,
-        'center',
+        textAlign,
         strokeStrength,
         template.shadowColor
       );
