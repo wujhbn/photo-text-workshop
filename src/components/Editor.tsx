@@ -34,6 +34,7 @@ export default function Editor() {
   const [signature, setSignature] = useState(() => localStorage.getItem('pref_signature') || '');
   const [isSharing, setIsSharing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('pref_fontFamily', fontFamily);
@@ -53,18 +54,12 @@ export default function Editor() {
 
   // Pre-load fonts and force canvas redraw when ready
   useEffect(() => {
-    // Explicitly load known web fonts to ensure canvas has them ready
     const fontsToLoad = ['"Zen Maru Gothic"', '"Noto Sans TC"', '"Noto Serif TC"', '"LXGW WenKai TC"', '"Zhi Mang Xing"', '"Yuji Syuku"'];
-    
     Promise.all(
       fontsToLoad.map(f => document.fonts.load(`16px ${f}`).catch(console.error))
     ).then(() => {
       document.fonts.ready.then(() => {
-        // Small state toggle to force canvas re-render now that fonts are loaded
-        setFontSizeFactor(prev => prev + 0.0001);
-        setTimeout(() => setFontSizeFactor(prev => prev - 0.0001), 100);
-        setTimeout(() => setFontSizeFactor(prev => prev + 0.0001), 500);
-        setTimeout(() => setFontSizeFactor(prev => prev - 0.0001), 1000);
+        setFontsLoaded(true);
       });
     });
   }, []);
@@ -112,20 +107,8 @@ export default function Editor() {
 
       // Render immediately with whatever fonts are available
       doRender();
-
-      // Ensure we re-render once fonts have fully loaded. Since we inject dynamic text 
-      // into the DOM, the browser will fetch needed unicode ranges.
-      if (document.fonts) {
-        document.fonts.ready.then(() => {
-          doRender();
-          // Fallback timer: Canvas sometimes needs a short delay after document.fonts.ready 
-          // to fully synthesize/render new characters in some browsers (e.g. Safari).
-          setTimeout(doRender, 150);
-          setTimeout(doRender, 500);
-        });
-      }
     }
-  }, [imageElement, imageOpacity, imageExposure, templateId, texts, signature, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical]);
+  }, [imageElement, imageOpacity, imageExposure, templateId, texts, signature, fontSizeFactor, fontFamily, strokeStrength, customStrokeColor, showDate, textVerticalPos, textAlign, isVertical, fontsLoaded]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -372,15 +355,6 @@ export default function Editor() {
             </h2>
              <button 
                onClick={() => {
-                 localStorage.setItem('pref_fontFamily', fontFamily);
-                 localStorage.setItem('pref_fontSizeFactor', fontSizeFactor.toString());
-                 localStorage.setItem('pref_strokeStrength', strokeStrength.toString());
-                 localStorage.setItem('pref_textVerticalPos', textVerticalPos.toString());
-                 localStorage.setItem('pref_textAlign', textAlign);
-                 localStorage.setItem('pref_isVertical', isVertical.toString());
-                 if (customStrokeColor) localStorage.setItem('pref_customStrokeColor', customStrokeColor);
-                 else localStorage.removeItem('pref_customStrokeColor');
-                 
                  setSaveSuccess(true);
                  setTimeout(() => setSaveSuccess(false), 2000);
                }}

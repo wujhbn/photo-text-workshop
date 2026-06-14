@@ -46,13 +46,21 @@ const blessings = [
   '願平安、健康、好運都在您身邊'
 ];
 
-function getRandomItem(arr: string[]): string {
+const dailyPrompts = [
+  { title: '生活愉快', message: '願每一天都充滿小確幸\n平凡日子也有小小幸福' },
+  { title: '天天開心', message: '笑口常開，好運自然來\n願您今天心情好' },
+  { title: '保重身體', message: '記得多喝水、好好休息\n健康是最大的財富' },
+  { title: '思念', message: '遠方的你還好嗎？\n願平安與幸福陪伴您' },
+  { title: '加油', message: '辛苦了，你做得很好\n每一步都算數' },
+];
+
+function getRandomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 export function generateCopy(time: TimeOfDay): { title: string; message: string } {
   if (time === 'daily') {
-    return { title: '', message: '' };
+    return getRandomItem(dailyPrompts);
   }
 
   let greetingObj = '';
